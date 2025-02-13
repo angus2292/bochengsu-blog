@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>【技術分享】Airflow 快速入門及如何在 Docker 上安裝</title>
+    <url>/bochengsu-blog/title/</url>
+    <content><![CDATA[<h1 id="什麼是-Airflow？"><a href="#什麼是-Airflow？" class="headerlink" title="什麼是 Airflow？"></a>什麼是 Airflow？</h1><p>先簡單介紹一下什麼是 Airflow。Airflow 原先由 Airbnb 開發的開源軟體，現為 Apache 頂級專案，並且具有 GUI 介面供使用者使用，是以 Python 寫成的工作流程管理系統（Workflow Management System）。</p>
+<h3 id="你可能會問，Airflow-可以拿來做什麼？"><a href="#你可能會問，Airflow-可以拿來做什麼？" class="headerlink" title="你可能會問，Airflow 可以拿來做什麼？"></a>你可能會問，Airflow 可以拿來做什麼？</h3><p>近年來，不管是資料科學家、資料工程師，還是任何需要處理數據的軟體工程師，Airflow 都是他們用來建構可靠 ETL 以及定期處理批量資料的首選之一。</p>
+<h3 id="在使用-Airflow-之前你必須先了解…"><a href="#在使用-Airflow-之前你必須先了解…" class="headerlink" title="在使用 Airflow 之前你必須先了解…"></a>在使用 Airflow 之前你必須先了解…</h3><p>一般而言，我們會將相關的工作設計為一個「<strong>有向無循環圖</strong>」(DAG, Directed Acyclic Graph)，顧名思義就是具有<strong>方向性</strong>且<strong>無回向</strong>的結構。因此，在使用 Airflow 進行開發時，需確保工作之間的相依性（Dependencies），讓 Airflow 幫助我們管理工作流程。</p>
+<h3 id="Airflow-的好處"><a href="#Airflow-的好處" class="headerlink" title="Airflow 的好處"></a>Airflow 的好處</h3><ol>
+<li><strong>定期執行工作流程</strong>，解決自動化的痛點。</li>
+<li><strong>維護相依性</strong>，確保工作流程從上游到下游執行，不會在上游未完成前執行下游。</li>
+<li><strong>自動重試機制</strong>，確保即使發生意外，仍能順利完成工作。</li>
+<li><strong>直觀的 Web UI</strong>，方便管理與監控工作流程。</li>
+</ol>
+<p>接下來就來教大家如何在 Docker 上安裝 Airflow 吧！</p>
+<hr>
+<h1 id="在-Docker-上安裝-Airflow"><a href="#在-Docker-上安裝-Airflow" class="headerlink" title="在 Docker 上安裝 Airflow"></a>在 Docker 上安裝 Airflow</h1><h2 id="環境準備"><a href="#環境準備" class="headerlink" title="環境準備"></a>環境準備</h2><p>建議使用 Linux 系統，例如 Ubuntu 20.04 LTS，也可使用 Windows 的 Linux 子系統。此外，請預先安裝：</p>
+<ol>
+<li><strong>Docker</strong></li>
+<li><strong>Docker Compose</strong></li>
+</ol>
+<p>當環境準備就緒後，即可開始安裝！</p>
+<h2 id="安裝方式"><a href="#安裝方式" class="headerlink" title="安裝方式"></a>安裝方式</h2><p>提供兩種安裝方式：</p>
+<h3 id="方法-1：使用現成的-Repository"><a href="#方法-1：使用現成的-Repository" class="headerlink" title="方法 1：使用現成的 Repository"></a>方法 1：使用現成的 Repository</h3><ol>
+<li>下載已準備好的 <code>Dockerfile</code> 及示範程式碼：<pre><code class="highlight sh">git <span class="built_in">clone</span> https://github.com/angus2292/Airflow_Quick_Start.git</code></pre></li>
+<li>進入 repo 目錄（應該能看到 <code>Dockerfile</code>），執行：<pre><code class="highlight sh">docker build -t airflow_demo:0.0.1 .</code></pre></li>
+<li>建立完成後，執行：<pre><code class="highlight sh">docker compose up -d</code></pre></li>
+</ol>
+<h3 id="方法-2：參考官方文件安裝"><a href="#方法-2：參考官方文件安裝" class="headerlink" title="方法 2：參考官方文件安裝"></a>方法 2：參考官方文件安裝</h3><ol>
+<li>建立新資料夾，下載最新版 <code>docker-compose.yaml</code>：<pre><code class="highlight sh">curl -LfO <span class="string">&#x27;https://airflow.apache.org/docs/apache-airflow/2.7.1/docker-compose.yaml&#x27;</span></code></pre></li>
+<li>新增 <code>dags</code>, <code>logs</code>, <code>plugins</code> 及 <code>config</code> 資料夾，並設定使用者 ID：<pre><code class="highlight sh"><span class="built_in">mkdir</span> -p ./dags ./logs ./plugins ./config
+<span class="built_in">echo</span> -e <span class="string">&quot;AIRFLOW_UID=<span class="subst">$(id -u)</span>&quot;</span> &gt; .<span class="built_in">env</span></code></pre>
+<strong>注意</strong>：若在 Windows 或 macOS 上出現 <code>沒有設置 AIRFLOW_UID</code>，請手動建立 <code>.env</code>，並設定 <code>AIRFLOW_UID=50000</code>。</li>
+<li>執行 Docker Compose：<pre><code class="highlight sh">docker compose up -d</code></pre></li>
+</ol>
+<p>這樣就完成 Airflow 的安裝囉！趕快打開 <code>localhost:8080</code>，使用預設帳號密碼 <code>airflow/airflow</code> 登入吧！</p>
+<hr>
+<h1 id="如何用-Python-撰寫-DAG？"><a href="#如何用-Python-撰寫-DAG？" class="headerlink" title="如何用 Python 撰寫 DAG？"></a>如何用 Python 撰寫 DAG？</h1><h2 id="DAG-與-Task"><a href="#DAG-與-Task" class="headerlink" title="DAG 與 Task"></a>DAG 與 Task</h2><p>一個 DAG 是由多個 Tasks 組成，每個 Task 皆獨立執行。Task 由 <strong>Operator</strong> 定義，常見的有：</p>
+<ul>
+<li><strong>SimpleHttpOperator</strong>：用於執行 HTTP 請求，如 API 呼叫。</li>
+<li><strong>PythonOperator</strong>：執行自訂的 Python 函數。</li>
+<li><strong>PostgresOperator</strong>：執行 PostgreSQL 查詢或數據庫操作。</li>
+</ul>
+<h3 id="PythonOperator-範例"><a href="#PythonOperator-範例" class="headerlink" title="PythonOperator 範例"></a>PythonOperator 範例</h3><pre><code class="highlight python"><span class="keyword">from</span> airflow <span class="keyword">import</span> DAG
+<span class="keyword">from</span> airflow.operators.python <span class="keyword">import</span> PythonOperator
+<span class="keyword">from</span> airflow.utils.dates <span class="keyword">import</span> days_ago
+<span class="keyword">from</span> datetime <span class="keyword">import</span> timedelta
+
+<span class="keyword">def</span> <span class="title function_">task1</span>():
+    <span class="built_in">print</span>(<span class="string">&#x27;task 1&#x27;</span>)
+
+<span class="keyword">def</span> <span class="title function_">task2</span>():
+    <span class="built_in">print</span>(<span class="string">&#x27;task 2&#x27;</span>)
+
+default_args = &#123;
+    <span class="string">&#x27;owner&#x27;</span>: <span class="string">&#x27;Angus Su&#x27;</span>,
+    <span class="string">&#x27;start_date&#x27;</span>: days_ago(<span class="number">1</span>),
+    <span class="string">&quot;retries&quot;</span>: <span class="number">1</span>,
+    <span class="string">&quot;retry_delay&quot;</span>: timedelta(minutes=<span class="number">5</span>)
+&#125;
+
+<span class="keyword">with</span> DAG(<span class="string">&#x27;example_dag&#x27;</span>, default_args=default_args) <span class="keyword">as</span> dag:
+    t1 = PythonOperator(
+        task_id=<span class="string">&#x27;task_1&#x27;</span>,
+        python_callable=task1
+    )
+    
+    t2 = PythonOperator(
+        task_id=<span class="string">&#x27;task_2&#x27;</span>,
+        python_callable=task2
+    )
+    
+    t1 &gt;&gt; t2  <span class="comment"># 設定 Task 執行順序</span></code></pre>
+
+<hr>
+<h1 id="TaskFlow-API"><a href="#TaskFlow-API" class="headerlink" title="TaskFlow API"></a>TaskFlow API</h1><h2 id="什麼是-TaskFlow？"><a href="#什麼是-TaskFlow？" class="headerlink" title="什麼是 TaskFlow？"></a>什麼是 TaskFlow？</h2><p>Airflow 2.0 引入了 <strong>TaskFlow API</strong>，讓 DAG 依賴管理更直覺，並內建 XCom 資料傳遞機制。</p>
+<h3 id="以往-XCom-資料傳遞方式"><a href="#以往-XCom-資料傳遞方式" class="headerlink" title="以往 XCom 資料傳遞方式"></a>以往 XCom 資料傳遞方式</h3><pre><code class="highlight python"><span class="keyword">def</span> <span class="title function_">ProcessData</span>(<span class="params">**kwargs</span>):
+    result = get_result()
+    push_result_to_xcom(result)
+
+<span class="keyword">def</span> <span class="title function_">LoadData</span>(<span class="params">**kwargs</span>):
+    data = get_data_from_xcom()</code></pre>
+
+<h3 id="TaskFlow-API-改寫版"><a href="#TaskFlow-API-改寫版" class="headerlink" title="TaskFlow API 改寫版"></a>TaskFlow API 改寫版</h3><pre><code class="highlight python"><span class="keyword">from</span> airflow.decorators <span class="keyword">import</span> task
+
+<span class="keyword">def</span> <span class="title function_">example_task_flow</span>():
+    
+<span class="meta">    @task</span>
+    <span class="keyword">def</span> <span class="title function_">ProcessData</span>():
+        result = get_result()
+        <span class="keyword">return</span> result
+
+<span class="meta">    @task</span>
+    <span class="keyword">def</span> <span class="title function_">LoadData</span>(<span class="params">result</span>):
+        data = process(result)
+        <span class="keyword">return</span> data
+    
+    res = ProcessData()
+    LoadData(res)
+
+example_task_flow()</code></pre>
+
+<h3 id="TaskFlow-API-優勢"><a href="#TaskFlow-API-優勢" class="headerlink" title="TaskFlow API 優勢"></a>TaskFlow API 優勢</h3><ul>
+<li>透過 <code>@task</code> 簡化 PythonOperator 的寫法。</li>
+<li>自動處理 XCom 資料傳遞，無需手動 <code>push</code>&#x2F;<code>pull</code>。</li>
+<li>讓程式碼更直觀、易讀。</li>
+</ul>
+<hr>
+<h1 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h1><p>本文簡要介紹了：</p>
+<ul>
+<li><strong>Airflow 的基本概念</strong></li>
+<li><strong>如何在 Docker 上安裝 Airflow</strong></li>
+<li><strong>如何撰寫 DAG</strong></li>
+<li><strong>TaskFlow API 的使用</strong></li>
+</ul>
+<p>Airflow 是一個強大的工作流程自動化工具，希望這篇文章對你有所幫助！</p>
+<p>此外，我準備了一個 <strong>PTT 股票爬蟲案例</strong>，可在 <code>dags</code> 目錄中找到：</p>
+<pre><code class="highlight sh">git <span class="built_in">clone</span> https://github.com/angus2292/Airflow_Quick_Start.git</code></pre>
+
+<p>內含 <code>crawling.py</code> 與 <code>crawling_task_flow.py</code>，示範 TaskFlow API 的應用。</p>
+<p>感謝閱讀！🎉</p>
+]]></content>
+      <tags>
+        <tag>docker</tag>
+        <tag>airflow</tag>
+      </tags>
+  </entry>
+</search>
